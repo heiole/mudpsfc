@@ -17,10 +17,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Record Changes
-      - name: Record Changes
+      # Step 2: Set Time Zone and Record Changes
+      - name: Set Time Zone and Record Changes
         id: record_changes
         run: |
+          export TZ="Europe/Warsaw"
           if [ $(git rev-list --count HEAD) -eq 1 ]; then
             echo "No previous commits to compare with." > changes.txt
           else
@@ -33,8 +34,11 @@ jobs:
       # Step 3: Define Timestamp and Zip the Mods Directory
       - name: Zip Mods Directory
         run: |
+          export TZ="Europe/Warsaw"
           timestamp=$(date +"%d.%m.%Y.%H.%M")
           echo "timestamp=$timestamp" >> $GITHUB_ENV
+          formatted_date=$(date +"%-d %B %Y, %H:%M")
+          echo "formatted_date=$formatted_date" >> $GITHUB_ENV
           zip -r -3 mods_$timestamp.zip mods
 
       # Step 4: Create a Release
@@ -45,7 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: "sfc_${{ github.sha }}"
-          release_name: "muddysfc - $(date +'%d %B %Y, %H:%M')"
+          release_name: "muddysfc - ${{ env.formatted_date }}"
           draft: false
           prerelease: false
           body: |
