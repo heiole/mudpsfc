@@ -1,0 +1,58 @@
+name: Mods Update Release
+
+on:
+  push:
+    paths:
+      - 'mods/**'  # Trigger workflow when any changes happen in the mods folder
+
+jobs:
+  release-modpack:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Record Changes
+      - name: Record Changes
+        id: record_changes
+        run: |
+          git diff --name-status HEAD^ HEAD mods/ > changes.txt
+          echo "Changes recorded:"
+          cat changes.txt
+          echo "::set-output name=changes::$(cat changes.txt)"
+
+      # Step 3: Zip the Mods Directory
+      - name: Zip Mods Directory
+        run: |
+          timestamp=$(date +"%d.%m.%Y.%H.%M")
+          zip -r -${{ env.ZIP_COMPRESSION_LEVEL }} mods_$timestamp.zip mods
+        env:
+          ZIP_COMPRESSION_LEVEL: 3  # Fast compression level
+
+      # Step 4: Create a Release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "sfc_${{ github.sha }}"
+          release_name: "muddysfc - $(date +'%d %B %Y, %H:%M')"
+          draft: false
+          prerelease: false
+          body: |
+            Changes:
+            ${{ steps.record_changes.outputs.changes }}
+
+      # Step 5: Upload the Zipped Mods Archive
+      - name: Upload Mods Archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: mods_$(date +"%d.%m.%Y.%H.%M").zip
+          asset_name: mods_$(date +"%d.%m.%Y.%H.%M").zip
+          asset_content_type: application/zip
