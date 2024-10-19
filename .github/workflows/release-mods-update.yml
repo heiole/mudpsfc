@@ -30,10 +30,11 @@ jobs:
           cat changes.txt
           echo "changes=$(cat changes.txt)" >> $GITHUB_ENV
 
-      # Step 3: Zip the Mods Directory
+      # Step 3: Define Timestamp and Zip the Mods Directory
       - name: Zip Mods Directory
         run: |
           timestamp=$(date +"%d.%m.%Y.%H.%M")
+          echo "timestamp=$timestamp" >> $GITHUB_ENV
           zip -r -3 mods_$timestamp.zip mods
 
       # Step 4: Create a Release
@@ -58,6 +59,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mods_$(date +"%d.%m.%Y.%H.%M").zip
-          asset_name: mods_$(date +"%d.%m.%Y.%H.%M").zip
+          asset_path: mods_${{ env.timestamp }}.zip
+          asset_name: mods_${{ env.timestamp }}.zip
           asset_content_type: application/zip
