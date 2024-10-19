@@ -35,10 +35,8 @@ jobs:
       - name: Zip Mods Directory
         run: |
           export TZ="Europe/Warsaw"
-          timestamp=$(date +"%d.%m.%Y.%H.%M")
+          timestamp=$(date +"%d.%m.%Y")
           echo "timestamp=$timestamp" >> $GITHUB_ENV
-          formatted_date=$(date +"%-d %B %Y, %H:%M")
-          echo "formatted_date=$formatted_date" >> $GITHUB_ENV
           zip -r -3 mods_$timestamp.zip mods
 
       # Step 4: Create a Release
@@ -49,12 +47,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: "sfc_${{ github.sha }}"
-          release_name: "muddysfc - ${{ env.formatted_date }}"
+          release_name: "muddysfc - ${{ env.timestamp }}"
           draft: false
           prerelease: false
-          body: |
-            Changes:
-            ${{ env.changes }}
+          body: "I ❤️ Kanye West"
 
       # Step 5: Upload the Zipped Mods Archive
       - name: Upload Mods Archive
