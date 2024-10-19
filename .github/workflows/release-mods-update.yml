@@ -18,7 +18,11 @@ jobs:
       - name: Record Changes
         id: record_changes
         run: |
-          git diff --name-status HEAD^ HEAD mods/ > changes.txt
+          if [ $(git rev-list --count HEAD) -eq 1 ]; then
+            echo "No previous commits to compare with." > changes.txt
+          else
+            git diff --name-status HEAD^ HEAD mods/ > changes.txt
+          fi
           echo "Changes recorded:"
           cat changes.txt
           echo "::set-output name=changes::$(cat changes.txt)"
