@@ -26,12 +26,15 @@ jobs:
           commit_hash=$(git rev-parse --short HEAD)
           echo "commit_hash=$commit_hash" >> $GITHUB_ENV
 
-          # Gracefully handle case where there's no previous commit
+          # Gracefully handle case where there's no previous commit or deleted files
           if git rev-parse HEAD^ >/dev/null 2>&1; then
             git diff --name-status HEAD^ HEAD mods/ > changes.txt
           else
-            echo "No previous commits to compare." > changes.txt
+            # Fall back to showing all tracked changes in the mods folder
+            git diff --name-status -- mods/ > changes.txt
           fi
+
+          # Output the changes
           echo "Changes recorded:"
           cat changes.txt
           echo "changes=$(cat changes.txt)" >> $GITHUB_ENV
