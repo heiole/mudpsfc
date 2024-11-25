@@ -22,10 +22,11 @@ jobs:
         id: record_changes
         run: |
           export TZ="Europe/Warsaw"
-          if [ $(git rev-list --count HEAD) -eq 1 ]; then
-            echo "No previous commits to compare with." > changes.txt
-          else
+          # Gracefully handle case where there's no previous commit
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
             git diff --name-status HEAD^ HEAD mods/ > changes.txt
+          else
+            echo "No previous commits to compare." > changes.txt
           fi
           echo "Changes recorded:"
           cat changes.txt
@@ -46,11 +47,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: "sfc_${{ github.sha }}"
-          release_name: "muddysfc - ${{ env.timestamp }}"
+          tag_name: "release-${{ env.timestamp }}"
+          release_name: "Mods Update - ${{ env.timestamp }}"
           draft: false
           prerelease: false
-          body: "I ❤️ Kanye West"
+          body: |
+            I ❤️ Kanye West
+
+            Changes in this release:
+            ${{ env.changes }}
 
       # Step 5: Upload the Zipped Mods Archive
       - name: Upload Mods Archive
