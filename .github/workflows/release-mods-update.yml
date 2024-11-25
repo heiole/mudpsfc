@@ -17,11 +17,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Set Time Zone and Record Changes
-      - name: Set Time Zone and Record Changes
+      # Step 2: Set Time Zone, Extract Commit Hash, and Record Changes
+      - name: Set Time Zone, Extract Commit Hash, and Record Changes
         id: record_changes
         run: |
           export TZ="Europe/Warsaw"
+          # Get the short commit hash
+          commit_hash=$(git rev-parse --short HEAD)
+          echo "commit_hash=$commit_hash" >> $GITHUB_ENV
+
           # Gracefully handle case where there's no previous commit
           if git rev-parse HEAD^ >/dev/null 2>&1; then
             git diff --name-status HEAD^ HEAD mods/ > changes.txt
@@ -47,8 +51,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: "release-${{ env.timestamp }}"
-          release_name: "Mods Update - ${{ env.timestamp }}"
+          tag_name: "release-${{ env.timestamp }}-${{ env.commit_hash }}"
+          release_name: "Mods Update - ${{ env.timestamp }} - ${{ env.commit_hash }}"
           draft: false
           prerelease: false
           body: |
