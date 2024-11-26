@@ -17,28 +17,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Set Time Zone, Extract Commit Hash, and Record Changes
-      - name: Set Time Zone, Extract Commit Hash, and Record Changes
-        id: record_changes
+      # Step 2: Set Time Zone and Extract Commit Hash
+      - name: Set Time Zone and Extract Commit Hash
         run: |
           export TZ="Europe/Warsaw"
-          
-          # Get the short commit hash
           commit_hash=$(git rev-parse --short HEAD)
           echo "commit_hash=$commit_hash" >> $GITHUB_ENV
-
-          # Capture changes (added, modified, deleted files) in the mods folder
-          if git rev-parse HEAD^ >/dev/null 2>&1; then
-            git diff --name-status HEAD^ HEAD mods/ > changes.txt
-          else
-            # Fall back to capturing all changes in mods if no previous commit exists
-            git diff --name-status -- mods/ > changes.txt
-          fi
-
-          # Debug output to check what changes were captured
-          echo "Contents of changes.txt:"
-          cat changes.txt
-          echo "changes=$(cat changes.txt)" >> $GITHUB_ENV
 
       # Step 3: Define Timestamp and Zip the Mods Directory
       - name: Zip Mods Directory
@@ -60,10 +44,7 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            I ❤️ Kanye West
-
-            Changes in this release:
-            ${{ env.changes }}
+            i ❤️ kenny and ye
 
       # Step 5: Upload the Zipped Mods Archive
       - name: Upload Mods Archive
